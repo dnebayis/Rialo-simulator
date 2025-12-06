@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rialo | Coding the Real World</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #e8e3d5;
+            font-family: 'Inter', sans-serif;
+            color: #141414;
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* --- UI Overlays --- */
+
+        /* Logo */
+        #logo-container {
+            position: absolute;
+            top: 32px;
+            left: 32px;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        #logo-container:hover {
+            transform: scale(1.05);
+        }
+        #logo-container svg {
+            width: 64px;
+            height: 64px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+        }
+
+        /* Stage Info / Story Card */
+        #stage-info {
+            position: absolute;
+            bottom: 90px; /* Lowered closer to footer */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: 90%;
+            max-width: 420px; /* Reduced width */
+            padding: 24px; /* Reduced padding */
+            background: rgba(255, 255, 255, 0.65); /* More transparent */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #stage-info h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.35rem; /* Slightly smaller text */
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            color: #141414;
+        }
+
+        #stage-info p {
+            margin: 0 0 16px 0;
+            font-size: 0.95rem; /* Slightly smaller text */
+            line-height: 1.5;
+            color: #444;
+            font-weight: 400;
+        }
+
+        /* Navigation Controls */
+        #nav-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin-top: 8px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #141414;
+            color: #141414;
+            width: 40px; /* Smaller buttons */
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1.1rem;
+        }
+
+        .nav-btn:hover {
+            background: #141414;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            background: transparent;
+            color: #141414;
+            transform: none;
+        }
+
+        .dots-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.2);
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: #141414;
+        }
+
+        /* Detail Modal */
+        #detail-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            width: 340px;
+            padding: 40px;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 0.3s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            text-align: left;
+        }
+
+        #detail-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -40%) scale(0.95);
+        }
+
+        #close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.2s;
+        }
+        
+        #close-modal:hover {
+            color: #141414;
+        }
+
+        #modal-title {
+            margin: 0 0 12px 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #141414;
+        }
+
+        #modal-description {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: rgba(20, 20, 20, 0.9);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.1s;
+            z-index: 30;
+            top: 0;
+            left: 0;
+            white-space: nowrap;
+            font-weight: 500;
+            transform: translate(-50%, -150%);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Footer */
+        #main-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            z-index: 15;
+            background: linear-gradient(to top, rgba(232, 227, 213, 1) 0%, rgba(232, 227, 213, 0) 100%);
+            pointer-events: none; /* Let clicks pass through area */
+        }
+
+        #main-footer a {
+            pointer-events: auto; /* Re-enable clicks on links */
+            text-decoration: none;
+            color: #141414;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            transition: opacity 0.2s, transform 0.2s;
+            font-weight: 500;
+        }
+
+        #main-footer a:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        #main-footer span {
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            #stage-info {
+                bottom: 110px;
+                width: 85%;
+                padding: 20px;
+            }
+            #main-footer {
+                flex-direction: column;
+                gap: 12px;
+                padding-bottom: 32px;
+                background: rgba(232, 227, 213, 0.95);
+            }
+            #main-footer span {
+                display: none;
+            }
+        }
+
+        .hidden { opacity: 0 !important; pointer-events: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <a href="https://www.rialo.io" target="_blank" id="logo-container">
+        <svg width="80" height="80" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="178" height="178" rx="29" fill="#141414" stroke="#E8E3D5" stroke-width="2"/>
+            <path d="M106.625 100.655C103.736 100.493 100.89 99.3801 98.9586 97.1916C96.2725 94.2692 95.3217 89.5202 96.9506 85.8339C98.9818 81.0683 103.912 79.0425 108.895 79.3912C112.608 79.3912 121.036 79.3912 125.354 79.3912C126.767 79.3713 128.004 79.4576 129.264 79.2982C132.166 78.9927 135.208 77.0831 136.76 74.5392C139.712 70.0692 138.595 63.5335 134.127 60.4782C132.349 59.1831 130.211 58.5953 128.02 58.4292C126.927 58.3196 125.826 58.1967 124.789 57.8812C121.508 56.9016 118.901 54.371 117.821 51.143C117.229 49.4626 117.253 47.6394 116.95 45.8992C116.252 41.7081 113.011 38.4934 108.799 37.5403C107.838 37.3145 106.927 37.1484 106.036 37.1418C95.827 37.1086 77.8698 37.0122 74.0268 37.0023C68.9239 36.896 64.0503 40.5092 63.1561 45.6169C62.1156 50.5685 65.1108 55.8621 69.8414 57.5259C71.5136 58.1502 72.8766 58.2864 74.6983 58.2665C80.2766 58.3196 81.4358 58.4525 84.4909 58.4823C88.4203 58.3561 92.6921 60.269 94.5903 63.776C98.7358 71.4308 92.8384 79.5838 84.3912 79.2849C73.9426 79.3082 67.9166 79.2716 55.3771 79.2816C53.2195 79.2982 51.5573 79.1587 49.5129 79.7067C43.632 81.0882 40.0583 87.8763 42.2491 93.5286C43.5655 97.2547 47.0528 99.9447 50.9889 100.426C55.9023 100.745 66.7055 100.463 79.1121 100.552C81.9677 100.552 84.0587 100.552 84.8898 100.552C85.691 100.546 86.4423 100.639 87.3066 100.811C92.5791 101.698 96.1794 106.832 95.8769 112.036C95.8769 115.547 95.8769 126.297 95.8769 131.653C95.8669 133.583 96.2126 135.569 97.2099 137.445C100.066 143.008 107.765 144.781 112.788 140.975C116.584 138.189 117.406 134.134 117.189 129.74C117.183 125.274 117.196 117.649 117.189 112.704C117.618 106.138 113.406 100.928 106.694 100.669L106.628 100.662L106.625 100.655Z" fill="#a9ddd3"/>
+        </svg>
+    </a>
+
+    <!-- 3D Canvas -->
+    <div id="root"></div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="hidden">
+        <button id="close-modal">&times;</button>
+        <h2 id="modal-title">Title</h2>
+        <p id="modal-description">Description text goes here.</p>
+    </div>
+
+    <!-- Stage Info & Navigation -->
+    <div id="stage-info">
+        <h2 id="stage-title">Rialo</h2>
+        <p id="stage-description">Loading the simulation...</p>
+        
+        <div id="nav-controls">
+            <button class="nav-btn" id="prev-btn" aria-label="Previous Stage">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="dots-container" id="dots-container">
+                <!-- Dots injected by JS -->
+            </div>
+            <button class="nav-btn" id="next-btn" aria-label="Next Stage">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer Links -->
+    <footer id="main-footer">
+        <a href="https://www.rialo.io/posts/introducing-rialo" target="_blank">Introducing Rialo</a>
+        <span>•</span>
+        <a href="https://www.rialo.io/blog" target="_blank">Blog</a>
+        <span>•</span>
+        <a href="https://www.rialo.io/posts/making-the-agent-economy-simple-and-safe-with-rialo" target="_blank">Safe Agent Economy</a>
+        <span>•</span>
+        <a href="https://www.rialo.io/posts/rialo-makes-real-world-assets-real" target="_blank">Real World Assets</a>
+        <span>•</span>
+        <a href="https://x.com/0xshawtyy" target="_blank">Built by @0xshawtyy</a>
+    </footer>
+
+    <script type="module" src="./index.tsx"></script>
+</body>
+</html>
