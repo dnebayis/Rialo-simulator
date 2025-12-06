@@ -18,3 +18,4 @@ View your app in AI Studio: https://ai.studio/apps/drive/1miaWKaLI8WPGvzvBxC7fHY
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+You can try it here: https://rialosimulator.netlify.app/
